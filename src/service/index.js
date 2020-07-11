@@ -2,12 +2,14 @@ import express from 'express';
 import bodyParser from 'body-parser';
 
 import Blockchain from '../blockchain';
-import P2PService from './p2p';
+import Wallet from '../wallet';
+import P2PService,{MESSAGE} from './p2p';
 
 const { HTTP_PORT = 3000 } = process.env;
 
 const app = express();
 const blockchain = new Blockchain();
+const wallet = new Wallet(blockchain);
 const p2pService = new P2PService(blockchain);
 
 app.use(bodyParser.json());
@@ -28,6 +30,21 @@ app.post('/mine', (req, res) => {
   });
 });
 
+app.get('/transactions',(req,res)=>{//devuelve todas alas rastraciones que exista ahotra mismo en nuestr blockcahin
+  const {memoryPool: { transactions }} = blockchain;
+  res.json(transactions);
+})
+
+app.post('/transactions', (req,res)=>{
+  const { body: {recipient, amount} } = req;
+  try {
+      const tx = wallet.createTransaction(recipient, amount);//generamos una transacion-firmandola
+      p2pService.broadcast(MESSAGE.TX, tx);
+    res.json(tx);
+    } catch (error) {
+    res.json({error: error.message})
+  }
+})
 app.listen(HTTP_PORT, () => {
   console.log(`Service HTTP:${HTTP_PORT} listening...`);
   p2pService.listen();

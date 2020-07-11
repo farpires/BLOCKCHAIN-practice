@@ -1,5 +1,6 @@
 import adjustDifficulty from './modules/adjustDifficulty';
 import genHash from '../modules/hash';
+
 const DIFFICULTY = 3;
 
 class Block {
@@ -53,7 +54,5 @@ class Block {
     `;
   }
 }
-
-export { DIFFICULTY };
 
 export default Block;

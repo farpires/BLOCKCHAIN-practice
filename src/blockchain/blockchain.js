@@ -1,9 +1,13 @@
 import Block from './block';
 import validate from './modules/validate';
+import MemoryPool from './memoryPool';
 
 class Blockchain {
   constructor() {
     this.blocks = [Block.genesis];
+    this.memoryPool = new MemoryPool();
+    //con esto cada nueva instancia de neustra blockchain automaticamente e inplisitamenettiene emori pool
+    //tienen la capacidad de almacenar transacciones que todavia no estan registarda en la propia blockchain
   }
 
   addBlock(data) {
