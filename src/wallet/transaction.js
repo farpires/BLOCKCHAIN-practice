@@ -2,6 +2,8 @@ import { v1 as uuidV1 } from 'uuid';
 // import uuidV1 from 'uuid/v1';
 import { elliptic } from '../modules';
 
+const REWARD = 1; //cada ves que se mine un nuevo bloque , lo guardde en el bloquechain va  a recibir a una unidad  
+ 
 class Transaction {
   constructor() {
     this.id = uuidV1();
@@ -32,6 +34,18 @@ class Transaction {
 
     return transaction; //retornamos la transacion 
   }
+  //recompensa
+  //minerWallet: donde vamos a enviar las unidades de las monedas
+  //blockchainWallet: es donde vamos a sacar esas unidades 
+  static reward(minerWallet,blockchainWallet){
+    return this.create(blockchainWallet, minerWallet.publicKey, REWARD);
+    //  const transacion = new this();
+    //  transacion.outputs({amount: REWARD, address: minerWallet.publicKey});
+    //  transacion.input = Transaction.sign(transacion,blockchainWallet);
+
+    //  return transacion
+  }
+
 
   static verify(transaction) {
     const { input: { address, signature }, outputs } = transaction;
@@ -61,4 +75,5 @@ class Transaction {
   }
 }
 
+export {REWARD}
 export default Transaction;

@@ -4,13 +4,16 @@ import bodyParser from 'body-parser';
 import Blockchain from '../blockchain';
 import Wallet from '../wallet';
 import P2PService,{MESSAGE} from './p2p';
+import Miner from '../miner';
 
 const { HTTP_PORT = 3000 } = process.env;
 
 const app = express();
 const blockchain = new Blockchain();
 const wallet = new Wallet(blockchain);
+const walletMiner = new Wallet(blockchain,0);
 const p2pService = new P2PService(blockchain);
+const miner = new Miner(blockchain,p2pService,walletMiner);
 
 app.use(bodyParser.json());
 
@@ -44,6 +47,15 @@ app.post('/transactions', (req,res)=>{
     } catch (error) {
     res.json({error: error.message})
   }
+})
+app.get('/mine/transactions',(req, res)=>{
+try {
+  miner.mine();
+  res.redirect('/blocks');
+} catch (error) {
+  res.json({error: error.message})
+  
+}
 })
 app.listen(HTTP_PORT, () => {
   console.log(`Service HTTP:${HTTP_PORT} listening...`);

@@ -55,4 +55,26 @@ describe('Wallet', () => {
       });
     });
   });
+
+  describe('calculatin balance',()=>{
+    let addBalance;
+    let times;
+    let senderWallet;
+    beforeEach(()=>{
+      addBalance=16;
+      times=3;
+      senderWallet = new Wallet(blockchain);
+      
+      for (let i = 0; i < times; i++) {
+        senderWallet.createTransaction(wallet.publicKey,addBalance);
+
+        
+      }
+      blockchain.addBlock(blockchain.memoryPool.transactions)
+    });
+    it('calculates the balance for blockchain txs matching the recipient',()=>{
+      expect(wallet.calculateBalance()).toEqual(INITIAL_BALANCE+(addBalance * times));
+    })
+
+  })
 });

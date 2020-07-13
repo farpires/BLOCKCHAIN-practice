@@ -4,8 +4,8 @@ import { elliptic, hash } from '../modules';
 const INITIAL_BALANCE = 100;
 
 class Wallet {
-  constructor(blockchain) {
-    this.balance = INITIAL_BALANCE;
+  constructor(blockchain, inicialBalance = INITIAL_BALANCE) {
+    this.balance = inicialBalance;
     this.keyPair = elliptic.createKeyPair();//se utiliza la curva eliptica
     this.publicKey = this.keyPair.getPublic().encode('hex');
     this.blockchain = blockchain;
@@ -27,7 +27,8 @@ class Wallet {
 
   createTransaction(recipientAddress, amount) {
     // 1-comprobar que le amount que estamos intentando envaiar  es ksuficiente 
-    const { balance, blockchain: { memoryPool } } = this;
+    const { blockchain: { memoryPool } } = this;
+    const balance  = this.calculaBalance();
     if (amount > balance) throw Error(`Amount: ${amount} exceds current balance: ${balance}`);
     //tenemos que c rear una transacion PERO antes tendremos que ver en memory pool si esa transacion existe o no 
         //porque si existe llamaremos al metodo update  de transacion y si no crearemos esa transacion
@@ -41,6 +42,37 @@ class Wallet {
     }
 
     return tx;
+  }
+
+  calculaBalance(){
+    const {blockchain:{blocks=[]}, publicKey} = this;
+    let { balance } = this;
+    const txs = [];//se guardara todas las transaciones que ha tenido nuestra blockchain
+
+    blocks.forEach(({data=[]})=>{
+      if(Array.isArray(data)) data.forEach((tx)=> txs.push(tx));
+    });
+    //buscaremos los input de nuestra walet
+      const walletInputTxs = txs.filter((tx)=>tx.input.address === publicKey);
+      const timestamp =0;
+      //puede pasar que no contega ninguna
+      if(walletInputTxs.length>0){
+        const  recentInputTx = walletInputTxs
+        .sort((a,b)=>a.input.timestamp - b.input.timestamp)
+        .pop();// de esta manera tenemos la ultimas transaccion
+
+        balance = recentInputTx.ouputs.find(({address})=> address === publicKey).amount;
+        timestamp = recentInputTx.input.timestamp;
+
+      }
+      tx
+      .filter(({input})=>input.timestamp>timestamp)
+      .forEach(({ouputs})=>{
+        ouputs.find(({ address, amount })=>{
+          if(address === publicKey) balance += amount;
+        });
+      });
+      return balance;
   }
 }
 
